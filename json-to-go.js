@@ -19,6 +19,7 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 	let accumulator = "";
 	let innerTabs = 0;
 	let parent = "";
+	let globallySeenTypeNames = [];
 
 	try
 	{
@@ -197,8 +198,15 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 			{
 				const keyname = getOriginalName(keys[i]);
 				indenter(innerTabs)
-				const typename = uniqueTypeName(format(keyname), seenTypeNames)
-				seenTypeNames.push(typename)
+				let typename
+				// structs will be defined on the top level of the go file, so they need to be globally unique
+				if (typeof scope[keys[i]] === "object" && scope[keys[i]] !== null) {
+					typename = uniqueTypeName(format(keyname), globallySeenTypeNames, parent)
+					globallySeenTypeNames.push(typename)
+				} else {
+					typename = uniqueTypeName(format(keyname), seenTypeNames)
+					seenTypeNames.push(typename)
+				}
 
 				appender(typename+" ");
 				parent = typename
@@ -222,8 +230,16 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 			{
 				const keyname = getOriginalName(keys[i]);
 				indent(tabs);
-				const typename = uniqueTypeName(format(keyname), seenTypeNames)
-				seenTypeNames.push(typename)
+				let typename
+				// structs will be defined on the top level of the go file, so they need to be globally unique
+				if (typeof scope[keys[i]] === "object" && scope[keys[i]] !== null) {
+					typename = uniqueTypeName(format(keyname), globallySeenTypeNames, parent)
+					globallySeenTypeNames.push(typename)
+				} else {
+					typename = uniqueTypeName(format(keyname), seenTypeNames)
+					seenTypeNames.push(typename)
+				}
+
 				append(typename+" ");
 				parent = typename
 				parseScope(scope[keys[i]], depth);
@@ -269,9 +285,17 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 
 	// Generate a unique name to avoid duplicate struct field names.
 	// This function appends a number at the end of the field name.
-	function uniqueTypeName(name, seen) {
+	function uniqueTypeName(name, seen, prefix=null) {
 		if (seen.indexOf(name) === -1) {
 			return name;
+		}
+
+		// check if we can get a unique name by prefixing it
+		if(prefix) {
+			name = prefix+name
+			if (seen.indexOf(name) === -1) {
+				return name;
+			}
 		}
 
 		let i = 0;
