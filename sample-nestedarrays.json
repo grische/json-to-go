@@ -1,0 +1,21 @@
+{
+    "description": "this is an array of [][]int",
+    "nested-array": [
+        [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ]
+    ]
+}
