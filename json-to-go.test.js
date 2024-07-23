@@ -163,6 +163,7 @@ function testFiles() {
     "duplicate-top-level-structs",
     "double-nested-objects",
     "array-with-nonmatching-types",
+    "array-with-mergable-objects",
   ];
 
   for (const testCase of testCases) {
