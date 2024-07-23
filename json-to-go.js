@@ -75,6 +75,8 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 					appender(slice);
 				else
 					append(slice)
+
+				// TODO: structs need a proper recursive solution to fix omitempty and nesting
 				if (sliceType == "struct") {
 					const allFields = {};
 
@@ -96,6 +98,28 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 								const currentValue = scope[i][keyname];
 
 								if (compareObjects(existingValue, currentValue)) {
+									const currentKeys = Object.keys(currentValue)
+									const existingKeys = Object.keys(existingValue)
+
+									// try to merge two object fields instead of creating separate ones
+									if (typeof existingValue === "object"
+										&& existingKeys.length > 0
+										&& typeof currentValue === "object"
+										&& currentKeys.length > 0
+									) {
+										var mergedValues = existingValue
+										for (const key of currentKeys) {
+											if (!Object.keys(mergedValues).includes(key)) {
+												mergedValues[key] = currentValue[key]
+												// TODO: find a proper handling of omitempty for nested structs
+												allOmitempty = true
+											}
+										}
+										allFields[keyname].value = mergedValues;
+										allFields[keyname].count++;
+										continue;
+									}
+
 									const comparisonResult = compareObjectKeys(
 										Object.keys(currentValue),
 										Object.keys(existingValue)
