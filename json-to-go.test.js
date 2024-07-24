@@ -159,6 +159,7 @@ function testFiles() {
   const testCases = [
     "duplicate-top-level-structs",
     "double-nested-objects",
+    "array-with-mergable-objects",
   ];
 
   for (const testCase of testCases) {
