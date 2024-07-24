@@ -38,10 +38,15 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 
 	parseScope(scope);
 
+	if (flatten)
+		go += accumulator
+
+	// add final newline for POSIX 3.206
+	if (!go.endsWith(`\n`))
+		go += `\n`
+
 	return {
-		go: flatten
-			? go += accumulator
-			: go
+		go: go
 	};
 
 
@@ -452,12 +457,12 @@ if (typeof module != 'undefined') {
             })
             process.stdin.on('end', function() {
                 const json = Buffer.concat(bufs).toString('utf8')
-                console.log(jsonToGo(json).go)
+                process.stdout.write(jsonToGo(json).go)
             })
         } else {
             process.stdin.on('data', function(buf) {
                 const json = buf.toString('utf8')
-                console.log(jsonToGo(json).go)
+                process.stdout.write(jsonToGo(json).go)
             })
         }
     } else {
