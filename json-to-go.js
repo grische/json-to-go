@@ -161,6 +161,14 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 										continue;
 									}
 
+									// if both one of the two objects is empty assume they are identical
+									if (currentKeys.length == 0 && existingKeys.length > 0 ||
+										currentKeys.length > 0 && existingKeys.length == 0) {
+										allFields[keyname].count++;
+										insideOmitEmpty = true // as the whole object is empty, all nested elements are omitempty
+										continue;
+									}
+
 									const comparisonResult = compareObjectKeys(
 										Object.keys(currentValue),
 										Object.keys(existingValue)
