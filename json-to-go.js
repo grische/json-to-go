@@ -19,6 +19,8 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 	let accumulator = "";
 	let innerTabs = 0;
 	let parent = "";
+	let globallySeenTypeNames = [];
+	let previousParents = "";
 
 	try
 	{
@@ -128,7 +130,7 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 						struct[keyname] = elem.value;
 						omitempty[keyname] = elem.count != scopeLength;
 					}
-					parseStruct(depth + 1, innerTabs, struct, omitempty); // finally parse the struct !!
+					parseStruct(depth + 1, innerTabs, struct, omitempty, previousParents); // finally parse the struct !!
 				}
 				else if (sliceType == "slice") {
 					parseScope(scope[0], depth)
@@ -151,7 +153,7 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 						append(parent)
 					}
 				}
-				parseStruct(depth + 1, innerTabs, scope);
+				parseStruct(depth + 1, innerTabs, scope, false, previousParents);
 			}
 		}
 		else {
@@ -164,7 +166,7 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 		}
 	}
 
-	function parseStruct(depth, innerTabs, scope, omitempty)
+	function parseStruct(depth, innerTabs, scope, omitempty, oldParents)
 	{
 		if (flatten) {
 			stack.push(
@@ -193,12 +195,20 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 			appender(`${parentType} struct {\n`);
 			++innerTabs;
 			const keys = Object.keys(scope);
+			previousParents = parent
 			for (let i in keys)
 			{
 				const keyname = getOriginalName(keys[i]);
 				indenter(innerTabs)
-				const typename = uniqueTypeName(format(keyname), seenTypeNames)
-				seenTypeNames.push(typename)
+				let typename
+				// structs will be defined on the top level of the go file, so they need to be globally unique
+				if (typeof scope[keys[i]] === "object" && scope[keys[i]] !== null) {
+					typename = uniqueTypeName(format(keyname), globallySeenTypeNames, previousParents)
+					globallySeenTypeNames.push(typename)
+				} else {
+					typename = uniqueTypeName(format(keyname), seenTypeNames)
+					seenTypeNames.push(typename)
+				}
 
 				appender(typename+" ");
 				parent = typename
@@ -212,18 +222,28 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 			}
 			indenter(--innerTabs);
 			appender("}");
+			previousParents = oldParents;
 		}
 		else
 		{
 			append("struct {\n");
 			++tabs;
 			const keys = Object.keys(scope);
+			previousParents = parent
 			for (let i in keys)
 			{
 				const keyname = getOriginalName(keys[i]);
 				indent(tabs);
-				const typename = uniqueTypeName(format(keyname), seenTypeNames)
-				seenTypeNames.push(typename)
+				let typename
+				// structs will be defined on the top level of the go file, so they need to be globally unique
+				if (typeof scope[keys[i]] === "object" && scope[keys[i]] !== null) {
+					typename = uniqueTypeName(format(keyname), globallySeenTypeNames, previousParents)
+					globallySeenTypeNames.push(typename)
+				} else {
+					typename = uniqueTypeName(format(keyname), seenTypeNames)
+					seenTypeNames.push(typename)
+				}
+
 				append(typename+" ");
 				parent = typename
 				parseScope(scope[keys[i]], depth);
@@ -240,6 +260,7 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 			}
 			indent(--tabs);
 			append("}");
+			previousParents = oldParents;
 		}
 		if (flatten)
 			accumulator += stack.pop();
@@ -269,9 +290,17 @@ function jsonToGo(json, typename, flatten = true, example = false, allOmitempty 
 
 	// Generate a unique name to avoid duplicate struct field names.
 	// This function appends a number at the end of the field name.
-	function uniqueTypeName(name, seen) {
+	function uniqueTypeName(name, seen, prefix=null) {
 		if (seen.indexOf(name) === -1) {
 			return name;
+		}
+
+		// check if we can get a unique name by prefixing it
+		if(prefix) {
+			name = prefix+name
+			if (seen.indexOf(name) === -1) {
+				return name;
+			}
 		}
 
 		let i = 0;
