@@ -140,7 +140,7 @@ function test(includeExampleData) {
     if (got.error) {
       console.assert(!got.error, `format('${testCase.input}'): ${got.error}`);
     } else {
-      exp = includeExampleData ? testCase.expectedWithExample : testCase.expected
+      const exp = includeExampleData ? testCase.expectedWithExample : testCase.expected
       console.assert(
         got.go === exp,
         `format('${testCase.input}'): \n\tgot:  ${quote(got.go)}\n\twant: ${
