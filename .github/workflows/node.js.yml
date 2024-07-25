@@ -34,7 +34,7 @@ jobs:
           set -eEuo pipefail
           got=$(node json-to-go.js < tests/double-nested-objects.json)
           exp=$(cat tests/double-nested-objects.go)
-          echo "got: ${got}"
+          echo "got: '${got}'"
           [[ "${got}" == "${exp}" ]]
 
       - name: Run json-to-go with -big using stdin
@@ -43,14 +43,14 @@ jobs:
           set -eEuo pipefail
           got=$(node json-to-go.js -big < tests/double-nested-objects.json)
           exp=$(cat tests/double-nested-objects.go)
-          echo "got: ${got}"
+          echo "got: '${got}'"
           [[ "${got}" == "${exp}" ]]
 
       - name: Run json-to-go with a file
         shell: bash
         run: |
           set -eEuo pipefail
-          got=$(node json-to-go.js -big < tests/double-nested-objects.json)
+          got=$(node json-to-go.js tests/double-nested-objects.json)
           exp=$(cat tests/double-nested-objects.go)
-          echo "got: ${got}"
+          echo "got: '${got}'"
           [[ "${got}" == "${exp}" ]]
