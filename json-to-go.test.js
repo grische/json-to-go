@@ -141,12 +141,14 @@ function test(includeExampleData) {
     const got = jsonToGo(testCase.input, null, null, includeExampleData);
     if (got.error) {
       console.assert(!got.error, `format('${testCase.input}'): ${got.error}`);
+      process.exitCode = 16
     } else {
       const exp = includeExampleData ? testCase.expectedWithExample : testCase.expected
-      console.assert(
-        got.go === exp,
+      const success = got.go === exp
+      console.assert(success,
         `format('${testCase.input}'): \n\tgot:  ${quote(got.go)}\n\twant: ${quote(exp)}`
       );
+      if(!success) process.exitCode = 17
     }
   }
   console.log(includeExampleData ? "done testing samples with data" : "done testing samples without data")
@@ -169,14 +171,17 @@ function testFiles() {
       const got = jsonToGo(jsonData);
       if (got.error) {
         console.assert(!got.error, `format('${jsonData}'): ${got.error}`);
+        process.exitCode = 18
       } else {
-        console.assert(
-          got.go === expectedGoData,
+        const success = got.go === expectedGoData
+        console.assert(success,
           `format('${jsonData}'): \n\tgot:  ${quote(got.go)}\n\twant: ${quote(expectedGoData)}`
         );
+        if(!success) process.exitCode = 19
       }
     } catch (err) {
       console.error(err);
+      process.exitCode = 20
     }
   }
   console.log("done testing files")
