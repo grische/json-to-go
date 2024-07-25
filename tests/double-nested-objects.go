@@ -15,5 +15,5 @@ type SecondType struct {
 }
 type Second struct {
 	ID int `json:"id"`
-	SecondType SecondType `json:"type"`
+	SecondType SecondType `json:"this should fail"`
 }
