@@ -491,7 +491,7 @@ if (typeof module != 'undefined') {
         } else if (process.argv.length === 3) {
             const fs = require('node:fs');
             const json = fs.readFileSync(process.argv[2], 'utf8');
-            console.log(jsonToGo(json).go)
+            process.stdout.write(jsonToGo(json).go)
         } else {
             process.stdin.on('data', function(buf) {
                 const json = buf.toString('utf8')
