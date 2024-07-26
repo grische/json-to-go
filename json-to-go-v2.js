@@ -498,9 +498,10 @@ function jsonToGo(json, options = {}) {
 
 if (typeof module === 'undefined' || !module.parent) {
 	let filename = null
+	let options = {}
 
-	function jsonToGoWithErrorHandling(json) {
-		const output = jsonToGo(json)
+	function jsonToGoWithErrorHandling(json, options) {
+		const output = jsonToGo(json, options)
 		if (output.error) {
 			console.error(output.error)
 			process.exitCode = 1
@@ -517,10 +518,31 @@ if (typeof module === 'undefined' || !module.parent) {
 			return
 		}
 
-		const argument = val.replace(/-/g, '')
-		switch (argument) {
+		let argument = {
+			arg: val.split("=")[0].replace(/^-+/, ''),
+			value: val.split("=")[1] || true,
+		}
+
+		if (argument.arg.startsWith("no-")) {
+			argument.arg = argument.arg.replace(/^no-/, '')
+			argument.value = !argument.value
+		}
+
+		switch (argument.arg) {
 			case "big":
 				console.warn(`Warning: The argument '${argument}' has been deprecated and has no effect anymore`)
+				break
+			case "typename":
+				options.typename = argument.value
+				break
+			case "flatten":
+				options.flatten = argument.value
+				break
+			case "examples":
+				options.example = argument.value
+				break
+			case "all-omitempty":
+				options.allOmitempty = argument.value
 				break
 			default:
 				console.error(`Unexpected argument ${val} received`)
@@ -531,7 +553,7 @@ if (typeof module === 'undefined' || !module.parent) {
 	if (filename) {
 		const fs = require('fs');
 		const json = fs.readFileSync(filename, 'utf8');
-		jsonToGoWithErrorHandling(json)
+		jsonToGoWithErrorHandling(json, options)
 	}
 
 	if (!filename) {
@@ -541,7 +563,7 @@ if (typeof module === 'undefined' || !module.parent) {
 		})
 		process.stdin.on('end', function () {
 			const json = Buffer.concat(bufs).toString('utf8')
-			jsonToGoWithErrorHandling(json)
+			jsonToGoWithErrorHandling(json, options)
 		})
 	}
 }
