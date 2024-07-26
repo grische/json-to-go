@@ -496,54 +496,54 @@ function jsonToGo(json, options = {}) {
 	}
 }
 
-if (typeof module != 'undefined') {
-	if (!module.parent) {
-		let filename = null
+if (typeof module === 'undefined' || !module.parent) {
+	let filename = null
 
-		function jsonToGoWithErrorHandling(json) {
-			const output = jsonToGo(json)
-			if (output.error) {
-				console.error(output.error)
-				process.exitCode = 1
-			}
-			process.stdout.write(output.go)
+	function jsonToGoWithErrorHandling(json) {
+		const output = jsonToGo(json)
+		if (output.error) {
+			console.error(output.error)
+			process.exitCode = 1
 		}
-
-		process.argv.forEach((val, index) => {
-			if (index < 2)
-				return
-
-			if (!val.startsWith('-')) {
-				filename = val
-				return
-			}
-
-			const argument = val.replace(/-/g, '')
-			if (argument === "big")
-				console.warn(`Warning: The argument '${argument}' has been deprecated and has no effect anymore`)
-			else {
-				console.error(`Unexpected argument ${val} received`)
-				process.exit(1)
-			}
-		})
-
-		if (filename) {
-			const fs = require('fs');
-			const json = fs.readFileSync(filename, 'utf8');
-			jsonToGoWithErrorHandling(json)
-		}
-
-		if (!filename) {
-			bufs = []
-			process.stdin.on('data', function(buf) {
-				bufs.push(buf)
-			})
-			process.stdin.on('end', function() {
-				const json = Buffer.concat(bufs).toString('utf8')
-				jsonToGoWithErrorHandling(json)
-			})
-		}
-	} else {
-		module.exports = jsonToGo
+		process.stdout.write(output.go)
 	}
+
+	process.argv.forEach((val, index) => {
+		if (index < 2)
+			return
+
+		if (!val.startsWith('-')) {
+			filename = val
+			return
+		}
+
+		const argument = val.replace(/-/g, '')
+		if (argument === "big")
+			console.warn(`Warning: The argument '${argument}' has been deprecated and has no effect anymore`)
+		else {
+			console.error(`Unexpected argument ${val} received`)
+			process.exit(1)
+		}
+	})
+
+	if (filename) {
+		const fs = require('fs');
+		const json = fs.readFileSync(filename, 'utf8');
+		jsonToGoWithErrorHandling(json)
+	}
+
+	if (!filename) {
+		bufs = []
+		process.stdin.on('data', function (buf) {
+			bufs.push(buf)
+		})
+		process.stdin.on('end', function () {
+			const json = Buffer.concat(bufs).toString('utf8')
+			jsonToGoWithErrorHandling(json)
+		})
+	}
+}
+
+if (typeof module !== 'undefined') {
+	module.exports = jsonToGo
 }
