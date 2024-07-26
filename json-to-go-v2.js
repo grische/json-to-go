@@ -518,11 +518,13 @@ if (typeof module === 'undefined' || !module.parent) {
 		}
 
 		const argument = val.replace(/-/g, '')
-		if (argument === "big")
-			console.warn(`Warning: The argument '${argument}' has been deprecated and has no effect anymore`)
-		else {
-			console.error(`Unexpected argument ${val} received`)
-			process.exit(1)
+		switch (argument) {
+			case "big":
+				console.warn(`Warning: The argument '${argument}' has been deprecated and has no effect anymore`)
+				break
+			default:
+				console.error(`Unexpected argument ${val} received`)
+				process.exit(1)
 		}
 	})
 
