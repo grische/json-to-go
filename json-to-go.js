@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
 	JSON-to-Go
 	by Matt Holt

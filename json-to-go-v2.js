@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
 	JSON-to-Go v2
 	by Matt Holt
@@ -514,7 +515,7 @@ if (typeof module === 'undefined' || !module.parent) {
 		const scriptname = path.basename(process.argv[1])
 
 		console.log(`\
-Usage: node ${scriptname} [OPTION]... [FILE]
+Usage: ${scriptname} [OPTION]... [FILE]
 Convert json to go file and prints the result on stdout.
 
 Optional arguments:
